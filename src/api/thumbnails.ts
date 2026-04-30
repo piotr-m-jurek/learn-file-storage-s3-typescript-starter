@@ -5,6 +5,7 @@ import type { ApiConfig } from "../config";
 import type { BunRequest } from "bun";
 import { BadRequestError, NotFoundError, UserForbiddenError } from "./errors";
 import path from "path";
+import { randomBytes } from "crypto";
 
 type Thumbnail = {
   data: ArrayBuffer;
@@ -53,7 +54,8 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
     throw new UserForbiddenError(`User ${userID} cannot access other users videos`)
   }
 
-  const fileName = `${videoId}.${mediaTypeToExtension[mediaType]}`
+  const randBytes = randomBytes(32).toString("base64url")
+  const fileName = `${randBytes}.${mediaTypeToExtension[mediaType]}`
 
   await Bun.write(path.join(cfg.assetsRoot, fileName), file, {createPath: true} )
 
