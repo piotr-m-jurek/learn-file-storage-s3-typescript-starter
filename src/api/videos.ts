@@ -43,14 +43,14 @@ export async function handlerUploadVideo(cfg: ApiConfig, req: BunRequest) {
         throw new BadRequestError(`Video file has to be in mp4 format`);
     }
 
-    const { path, file } = await getPreprocessedFile({
+    const { path: filePath, file } = await getPreprocessedFile({
         cfg,
         video,
     });
     try {
-        const aspectRatio = await getVideoAspectRatio(path);
+        const aspectRatio = await getVideoAspectRatio(filePath);
 
-        const key = `${aspectRatio}/${path.basename(path)}`;
+        const key = `${aspectRatio}/${path.basename(filePath)}`;
         const s3File = cfg.s3Client.file(key, {
             bucket: cfg.s3Bucket,
             region: cfg.s3Region,
