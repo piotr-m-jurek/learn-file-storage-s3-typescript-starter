@@ -5,5 +5,9 @@ export async function generatePresignedURL(
     key: string,
     expireTime: number,
 ) {
-    return cfg.s3Client.presign(key, { expiresIn: expireTime });
+    return cfg.s3Client.presign(key, {
+        expiresIn: expireTime,
+        bucket: cfg.s3Bucket,
+        region: cfg.s3Region,
+    });
 }
