@@ -5,6 +5,7 @@ import { getBearerToken, validateJWT } from "../auth";
 import type { ApiConfig } from "../config";
 import { getVideo, updateVideo } from "../db/videos";
 import { BadRequestError, UserForbiddenError } from "./errors";
+import { dbVideoToSignedVideo } from "./db-video-to-signed-video";
 import { getVideoAspectRatio } from "./get-video-aspect-ratio";
 import { respondWithJSON } from "./json";
 import { processVideoForFastStart } from "./process-video-for-fast-start";
@@ -49,19 +50,20 @@ export async function handlerUploadVideo(cfg: ApiConfig, req: BunRequest) {
     try {
         const aspectRatio = await getVideoAspectRatio(path);
 
-        const s3Uri = `${aspectRatio}/${path}`;
-        const s3File = cfg.s3Client.file(s3Uri, {
+        const key = `${aspectRatio}/${path.basename(path)}`;
+        const s3File = cfg.s3Client.file(key, {
             bucket: cfg.s3Bucket,
             region: cfg.s3Region,
         });
         await s3File.write(file, { type: "video/mp4" });
 
-        updateVideo(cfg.db, { ...metadata, videoURL: s3Uri });
+        const updated = { ...metadata, videoURL: key };
+        updateVideo(cfg.db, updated);
+        const signedVideo = await dbVideoToSignedVideo(cfg, updated);
+        return respondWithJSON(200, signedVideo);
     } finally {
         file.delete();
     }
-
-    return respondWithJSON(200, null);
 }
 
 async function getPreprocessedFile({
