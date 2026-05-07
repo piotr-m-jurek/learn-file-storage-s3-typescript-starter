@@ -1,9 +1,9 @@
-import { type ApiConfig } from "../config";
-import { getBearerToken, validateJWT } from "../auth";
-import { createVideo, deleteVideo, getVideo, getVideos } from "../db/videos";
-import { respondWithJSON } from "./json";
-import { BadRequestError, NotFoundError, UserForbiddenError } from "./errors";
 import type { BunRequest } from "bun";
+import { getBearerToken, validateJWT } from "../auth";
+import type { ApiConfig } from "../config";
+import { createVideo, deleteVideo, getVideo, getVideos } from "../db/videos";
+import { BadRequestError, NotFoundError, UserForbiddenError } from "./errors";
+import { respondWithJSON } from "./json";
 
 export async function handlerVideoMetaCreate(cfg: ApiConfig, req: Request) {
     const token = getBearerToken(req.headers);
