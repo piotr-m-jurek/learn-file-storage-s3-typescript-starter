@@ -5,7 +5,6 @@ import { getBearerToken, validateJWT } from "../auth";
 import type { ApiConfig } from "../config";
 import { getVideo, updateVideo } from "../db/videos";
 import { BadRequestError, UserForbiddenError } from "./errors";
-import { dbVideoToSignedVideo } from "./db-video-to-signed-video";
 import { getVideoAspectRatio } from "./get-video-aspect-ratio";
 import { respondWithJSON } from "./json";
 import { processVideoForFastStart } from "./process-video-for-fast-start";
@@ -57,10 +56,10 @@ export async function handlerUploadVideo(cfg: ApiConfig, req: BunRequest) {
         });
         await s3File.write(file, { type: "video/mp4" });
 
-        const updated = { ...metadata, videoURL: key };
+        const videoURL = `${cfg.s3CfDistribution}/${key}`;
+        const updated = { ...metadata, videoURL };
         updateVideo(cfg.db, updated);
-        const signedVideo = await dbVideoToSignedVideo(cfg, updated);
-        return respondWithJSON(200, signedVideo);
+        return respondWithJSON(200, updated);
     } finally {
         file.delete();
     }
